@@ -663,8 +663,8 @@ async function initPyodideRuntime(msg) {
   const pyodideBase = `${origin}/vendor/pyodide/`;
 
   emit('status', { state: 'loading', text: 'Loading Python WASM...' });
-  const { loadPyodide } = await import(`${pyodideBase}pyodide.mjs`);
-
+  const { loadPyodide } = await import(/* @vite-ignore */ `${pyodideBase}pyodide.mjs`);
+  
   pyodide = await loadPyodide({
     indexURL: pyodideBase
   });
