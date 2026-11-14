@@ -28,7 +28,7 @@ import {
   readUploadedFileList,
   saveSingleFileToComputer
 } from './storage/file-transfer.js';
-import { IdeTerminal, parseShellWords } from './ui/terminal.js';
+import { IdeTerminal, parseShellWords } from '../ui/terminal.js';
 import {
   clearPreviewResources,
   isPreviewOnlyFile,
