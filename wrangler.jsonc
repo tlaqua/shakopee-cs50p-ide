@@ -1,0 +1,16 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "shakopee-cs50p-ide",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-09-01",
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "run_worker_first": ["/api/*"]
+  },
+  "vars": {
+    // Set to "false" for strict air-gapped operation at the Cloudflare edge as well;
+    // CS50P Week 4 APIs (Bitcoin / iTunes) still work using built-in Worker fixtures.
+    "ALLOW_LIVE_CS50_API_FETCH": "true"
+  }
+}
