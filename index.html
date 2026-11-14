@@ -1,0 +1,237 @@
+<!doctype html>
+<html lang="en" data-theme="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shakopee CS50P Studio — Browser Python IDE</title>
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+  </head>
+  <body>
+    <div id="app">
+      <!-- Top IDE Header -->
+      <header class="topbar">
+        <div class="brand">
+          <svg class="brand-logo" viewBox="0 0 64 64" aria-hidden="true">
+            <rect width="64" height="64" rx="14" fill="#0B0D11" />
+            <rect x="3" y="3" width="58" height="58" rx="12" fill="none" stroke="#EF3340" stroke-width="3.5" />
+            <path d="M22 20h14a8 8 0 0 1 8 8v3H26a4 4 0 0 0-4 4v9h-4a6 6 0 0 1-6-6V28a8 8 0 0 1 8-8z" fill="#EF3340" />
+            <circle cx="24" cy="25.5" r="2.2" fill="#FFFFFF" />
+            <path d="M42 44H28a8 8 0 0 1-8-8v-3h18a4 4 0 0 0 4-4v-9h4a6 6 0 0 1 6 6v10a8 8 0 0 1-8 8z" fill="#F3F4F6" />
+            <circle cx="40" cy="38.5" r="2.2" fill="#0B0D11" />
+          </svg>
+          <div class="brand-text">
+            <span class="brand-title">Shakopee <span class="accent">CS50P</span> Studio</span>
+            <span class="brand-sub">ISD 720 · Harvard CS50 Python IDE</span>
+          </div>
+        </div>
+
+        <div class="run-controls">
+          <div class="args-box" title="Optional command-line arguments passed as sys.argv[1:]">
+            <span class="args-prefix">args</span>
+            <input id="cliArgsInput" type="text" placeholder="e.g. before1.jpg after1.jpg" spellcheck="false" />
+          </div>
+
+          <button id="btnRun" class="btn btn-primary" title="Run current script (Ctrl+Enter or F5)">
+            <span class="icon">&#9654;</span> Run
+          </button>
+          <button id="btnPytest" class="btn btn-secondary" title="Run pytest on current test file or folder">
+            <span class="icon">&#10003;</span> pytest
+          </button>
+          <button id="btnStop" class="btn btn-danger hidden" title="Interrupt running program (Ctrl+C)">
+            <span class="icon">&#9632;</span> Stop
+          </button>
+        </div>
+
+        <div class="topbar-actions">
+          <div id="runtimeStatus" class="status-pill loading" title="Self-contained WebAssembly Python status">
+            <span class="status-dot"></span>
+            <span id="runtimeStatusText">Booting Python...</span>
+          </div>
+
+          <button id="btnSaveFile" class="btn btn-ghost" title="Download active file to your computer (Ctrl+S)">
+            Save .py
+          </button>
+          <button id="btnExportZip" class="btn btn-ghost" title="Download entire workspace as a .zip file">
+            Export .zip
+          </button>
+          <button id="btnThemeToggle" class="btn btn-ghost" title="Switch Sabers Dark / Sabers Light theme">
+            Theme
+          </button>
+          <button id="btnDocs" class="btn btn-outline-accent" title="Open Python & CS50P Help & Documentation (F1)">
+            Help & Docs
+          </button>
+        </div>
+      </header>
+
+      <!-- Main IDE Workspace -->
+      <div class="workspace-shell">
+        <!-- Activity Bar -->
+        <aside class="activity-rail" aria-label="Activity Bar">
+          <button class="rail-btn active" data-panel="explorer" title="Project Files">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M3 7v10a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-6l-2-2H5a2 2 0 0 0-2 2z" />
+            </svg>
+          </button>
+          <button class="rail-btn" data-panel="curriculum" title="CS50P Curriculum & Starters">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" />
+              <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" />
+            </svg>
+          </button>
+          <button class="rail-btn" data-panel="outline" title="Symbols & Snippets">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="16 18 22 12 16 6" />
+              <polyline points="8 6 2 12 8 18" />
+            </svg>
+          </button>
+        </aside>
+
+        <!-- Sidebar -->
+        <aside id="sidebar" class="sidebar">
+          <!-- Explorer Panel -->
+          <section id="panel-explorer" class="side-panel active">
+            <div class="panel-header">
+              <span>PROJECT FILES</span>
+              <div class="panel-actions">
+                <button id="btnNewFile" class="icon-btn" title="New File">+ File</button>
+                <button id="btnNewFolder" class="icon-btn" title="New Folder">+ Dir</button>
+                <button id="btnUploadFiles" class="icon-btn" title="Upload local files (.py, .csv, .jpg, .png)">Upload</button>
+                <input id="fileUploadInput" type="file" multiple class="hidden" />
+              </div>
+            </div>
+            <div id="fileTree" class="file-tree" tabindex="0"></div>
+            <div class="sidebar-footer">
+              <button id="btnRestoreSamples" class="btn btn-ghost btn-sm full-width" title="Create Week 6 & Week 8 sample CSVs and images">
+                Load CS50P Sample Assets
+              </button>
+            </div>
+          </section>
+
+          <!-- CS50P Curriculum Panel -->
+          <section id="panel-curriculum" class="side-panel">
+            <div class="panel-header">
+              <span>CS50P CURRICULUM</span>
+            </div>
+            <div id="curriculumList" class="curriculum-list"></div>
+          </section>
+
+          <!-- Symbols & Quick Reference Panel -->
+          <section id="panel-outline" class="side-panel">
+            <div class="panel-header">
+              <span>SYMBOLS & SNIPPETS</span>
+            </div>
+            <div class="outline-section">
+              <div class="outline-subhead">Current File Symbols</div>
+              <div id="symbolOutline" class="symbol-outline"></div>
+              <div class="outline-subhead">CS50P Quick Snippets</div>
+              <div id="snippetList" class="snippet-list"></div>
+            </div>
+          </section>
+        </aside>
+
+        <div id="sidebarResizer" class="resizer-v" title="Drag to resize sidebar"></div>
+
+        <!-- Center Editor + Bottom Terminal -->
+        <main class="main-area">
+          <div class="editor-section">
+            <div class="tabs-bar">
+              <div id="editorTabs" class="editor-tabs"></div>
+              <div class="editor-meta">
+                <span id="cursorPos">Ln 1, Col 1</span>
+                <span id="diagSummary" class="diag-summary">0 errors</span>
+              </div>
+            </div>
+
+            <div class="editor-stage">
+              <div id="monacoHost" class="monaco-host"></div>
+              <div id="previewHost" class="preview-host hidden"></div>
+            </div>
+          </div>
+
+          <div id="terminalResizer" class="resizer-h" title="Drag to resize terminal"></div>
+
+          <section class="bottom-panel">
+            <div class="bottom-tabs">
+              <div class="bottom-tab-group">
+                <button class="bottom-tab active" data-bottom="terminal">Terminal</button>
+                <button class="bottom-tab" data-bottom="problems">
+                  Problems <span id="problemBadge" class="badge">0</span>
+                </button>
+                <button class="bottom-tab" data-bottom="outputs">
+                  Generated Files <span id="outputBadge" class="badge">0</span>
+                </button>
+              </div>
+              <div class="terminal-toolbar">
+                <button id="btnSendEOF" class="btn btn-xs btn-secondary" title="Send End-of-File (Ctrl+D) to trigger EOFError in input()">
+                  Send EOF (Ctrl+D)
+                </button>
+                <button id="btnClearTerm" class="btn btn-xs btn-ghost" title="Clear terminal output">
+                  Clear
+                </button>
+              </div>
+            </div>
+
+            <!-- Terminal Tab -->
+            <div id="bottom-terminal" class="bottom-pane active">
+              <div id="terminalOutput" class="terminal-output" aria-live="polite"></div>
+              <div id="terminalInputRow" class="terminal-input-row">
+                <span id="terminalPromptLabel" class="terminal-prompt">~/workspace $</span>
+                <input
+                  id="terminalInput"
+                  class="terminal-input"
+                  type="text"
+                  autocomplete="off"
+                  autocapitalize="off"
+                  spellcheck="false"
+                  placeholder="Type command (e.g. python hello.py, pytest test_hello.py, ls, help)..."
+                />
+              </div>
+            </div>
+
+            <!-- Problems Tab -->
+            <div id="bottom-problems" class="bottom-pane">
+              <div id="problemsList" class="problems-list"></div>
+            </div>
+
+            <!-- Generated Files Tab -->
+            <div id="bottom-outputs" class="bottom-pane">
+              <div id="outputsList" class="outputs-list"></div>
+            </div>
+          </section>
+        </main>
+      </div>
+
+      <!-- Status Bar -->
+      <footer class="statusbar">
+        <div class="status-left">
+          <span class="status-brand-chip">SHAKOPEE SABERS</span>
+          <span id="statusCwd">cwd: /workspace</span>
+          <span id="statusIsolation">Isolation: Checking...</span>
+        </div>
+        <div class="status-right">
+          <span>Python 3 (Pyodide WASM)</span>
+          <span>Offline Self-Contained Lab Mode</span>
+        </div>
+      </footer>
+    </div>
+
+    <!-- Help & Documentation Modal -->
+    <div id="docsModal" class="modal-backdrop hidden" role="dialog" aria-modal="true" aria-labelledby="docsTitle">
+      <div class="modal-dialog">
+        <div class="modal-header">
+          <div>
+            <h2 id="docsTitle">Shakopee CS50P Help & Offline Python Documentation</h2>
+            <p class="modal-subtitle">100% offline reference for Harvard CS50's Introduction to Programming with Python</p>
+          </div>
+          <button id="btnCloseDocs" class="btn btn-ghost">Close (Esc)</button>
+        </div>
+        <div class="docs-search-bar">
+          <input id="docsSearchInput" type="search" placeholder="Search Python functions, CS50P libraries (PIL, fpdf, pytest, re, csv, emoji...)" />
+        </div>
+        <div id="docsBody" class="modal-body"></div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
