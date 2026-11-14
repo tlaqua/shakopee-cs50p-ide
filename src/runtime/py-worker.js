@@ -70,7 +70,7 @@ import os
 import sys
 import traceback
 from pathlib import Path
-from js import __ideBridge
+from js import __ideBridge as _ide_bridge
 
 WORKSPACE_ROOT = "/workspace"
 os.makedirs(WORKSPACE_ROOT, exist_ok=True)
@@ -89,7 +89,7 @@ class _IdeStream(io.TextIOBase):
         return True
     def write(self, s):
         if s:
-            __ideBridge.writeOut(self._name, str(s))
+            _ide_bridge.writeOut(self._name, str(s))
         return len(s)
     def flush(self):
         pass
@@ -106,7 +106,7 @@ class _IdeStdin(io.TextIOBase):
         return True
     def readline(self, size=-1):
         if not self._buf:
-            line = __ideBridge.readLineSync()
+            line = _ide_bridge.readLineSync()
             if line == "__IDE_INTERRUPT__":
                 raise KeyboardInterrupt()
             if line is None:
@@ -129,7 +129,7 @@ def _install_requests_bridge():
 
         class _LabBridgeAdapter(BaseAdapter):
             def send(self, request, stream=False, timeout=None, verify=True, cert=None, proxies=None):
-                raw = __ideBridge.syncFetchBridge(
+                raw = _ide_bridge.syncFetchBridge(
                     request.url,
                     request.method or "GET",
                     json.dumps(dict(request.headers or {}))
@@ -267,7 +267,7 @@ def ide_run_pytest(args_list, cwd):
     try:
         import pytest
         os.environ["PY_COLORS"] = "1"
-        args = ["--color=yes", "-p", "no:cacheprovider"] + list(args_list)
+        args = ["--color=yes", "--capture=sys", "-p", "no:cacheprovider"] + list(args_list)
         code = int(pytest.main(args))
         return code
     except KeyboardInterrupt:
